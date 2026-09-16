@@ -1,0 +1,58 @@
+// Local dev uses SQLite so the app runs with zero cloud setup.
+// For production, switch provider to "postgresql" and point DATABASE_URL at
+// your Supabase connection string, then run `npx prisma migrate dev`.
+// See README.md "Database" section for the exact steps.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Search {
+  id             String   @id @default(cuid())
+  industry       String
+  location       String
+  productKeyword String?
+  createdAt      DateTime @default(now())
+  companies      Company[]
+}
+
+model Company {
+  id           String    @id @default(cuid())
+  searchId     String
+  search       Search    @relation(fields: [searchId], references: [id], onDelete: Cascade)
+  placeId      String
+  name         String
+  category     String?
+  address      String?
+  website      String?
+  phone        String?
+  rating       Float?
+  domain       String?
+  isDuplicate  Boolean   @default(false)
+  validContact Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  fitScore     FitScore?
+
+  @@index([searchId])
+  @@index([placeId])
+  @@index([domain])
+}
+
+model FitScore {
+  id              String   @id @default(cuid())
+  companyId       String   @unique
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  score            Int
+  reason           String
+  categoryMatch    Boolean
+  hasWebsite       Boolean
+  hasPhone         Boolean
+  similarity       Float
+  signals          String   // JSON-encoded signal breakdown
+  createdAt        DateTime @default(now())
+}

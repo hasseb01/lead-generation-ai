@@ -1,0 +1,11 @@
+name,category,address,website,phone,rating,domain,isDuplicate,validContact,fitScore,reason,categoryMatch,hasWebsite,hasPhone,similarity
+Squarespace,Software Company,"225 Varick St, New York, NY",https://squarespace.com,(212) 555-0101,4.4,squarespace.com,false,true,73,"Matched: category matches ""Software"", has website, has phone",true,true,true,0.33
+Datadog,Software Company,"620 8th Ave, New York, NY",https://datadoghq.com,(212) 555-0102,4.3,datadoghq.com,false,true,73,"Matched: category matches ""Software"", has website, has phone",true,true,true,0.33
+MongoDB,Software Company,"1633 Broadway, New York, NY",https://mongodb.com,(212) 555-0103,4.5,mongodb.com,false,true,73,"Matched: category matches ""Software"", has website, has phone",true,true,true,0.33
+Peloton Interactive Engineering,Software Company,"441 9th Ave, New York, NY",https://onepeloton.com,(212) 555-0104,4.1,onepeloton.com,false,true,68,"Matched: category matches ""Software"", has website, has phone",true,true,true,0.2
+Codecademy,Software Company,"575 Broadway, New York, NY",https://codecademy.com,,4.2,codecademy.com,false,true,63,"Matched: category matches ""Software"", has website",true,true,false,0.33
+"Weitz & Luxenberg, P.C.",Personal Injury Attorney,"700 Broadway, New York, NY",https://weitzlux.com,(212) 555-0201,4.6,weitzlux.com,false,true,20,"Mismatch: category = Personal Injury Attorney",false,true,true,0
+"Gair, Gair, Conason Law Firm",Personal Injury Attorney,"80 Pine St, New York, NY",https://gairlaw.com,(212) 555-0203,4.7,gairlaw.com,false,true,20,"Mismatch: category = Personal Injury Attorney",false,true,true,0
+"Chen & Associates 律师事务所",Personal Injury Attorney,"111 John St, New York, NY",,(212) 555-0204,4.1,,false,true,10,"Mismatch: category = Personal Injury Attorney, no website",false,false,true,0
+"Redmond Law Firm, PLLC",Personal Injury Attorney,"26 Broadway, New York, NY",,(212) 555-0202,4.0,,false,true,10,"Mismatch: category = Personal Injury Attorney, no website",false,false,true,0
+New York Legal Consultants,Consultant,"1 Wall St, New York, NY",,,3.8,,false,true,0,"Mismatch: category = Consultant, no website, no phone",false,false,false,0
