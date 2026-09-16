@@ -26,7 +26,7 @@ function tokenize(text: string): Set<string> {
 }
 
 /** Jaccard similarity between token sets — used when no OpenAI key is configured. */
-function tokenOverlapSimilarity(a: string, b: string): number {
+export function tokenOverlapSimilarity(a: string, b: string): number {
   const setA = tokenize(a);
   const setB = tokenize(b);
   if (setA.size === 0 || setB.size === 0) return 0;
@@ -36,7 +36,7 @@ function tokenOverlapSimilarity(a: string, b: string): number {
   return union === 0 ? 0 : intersection / union;
 }
 
-function cosineSimilarity(a: number[], b: number[]): number {
+export function cosineSimilarity(a: number[], b: number[]): number {
   let dot = 0, magA = 0, magB = 0;
   for (let i = 0; i < a.length; i++) {
     dot += a[i] * b[i];
@@ -47,7 +47,7 @@ function cosineSimilarity(a: number[], b: number[]): number {
   return dot / (Math.sqrt(magA) * Math.sqrt(magB));
 }
 
-async function embed(text: string): Promise<number[]> {
+export async function embed(text: string): Promise<number[]> {
   const res = await fetch("https://api.openai.com/v1/embeddings", {
     method: "POST",
     headers: {

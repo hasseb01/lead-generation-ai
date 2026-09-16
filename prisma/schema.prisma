@@ -37,6 +37,8 @@ model Company {
   validContact Boolean   @default(true)
   createdAt    DateTime  @default(now())
   fitScore     FitScore?
+  emailChecks  EmailVerification[]
+  webScans     WebScan[]
 
   @@index([searchId])
   @@index([placeId])
@@ -55,4 +57,47 @@ model FitScore {
   similarity       Float
   signals          String   // JSON-encoded signal breakdown
   createdAt        DateTime @default(now())
+}
+
+// Real deliverability check: syntax -> DNS MX -> SMTP RCPT probe -> disposable/role/catch-all
+// heuristics. companyId is optional so the standalone Validators panel (arbitrary email, not
+// tied to a search result) can share the same table and verification logic.
+model EmailVerification {
+  id              String   @id @default(cuid())
+  companyId       String?
+  company         Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  email           String
+  status          String   // "valid" | "invalid" | "risky" | "unknown"
+  reason          String
+  syntaxValid     Boolean
+  mxFound         Boolean
+  smtpDeliverable Boolean?
+  isDisposable    Boolean
+  isRoleAccount   Boolean
+  isCatchAll      Boolean?
+  guessed         Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  @@index([companyId])
+  @@index([email])
+}
+
+// AI Web Scanner: fetches the company's live site and extracts signals from it directly
+// (no black-box claims — every field here traces back to bytes actually fetched from `url`,
+// or is explicitly null when the fetch failed, per fetchOk/error).
+model WebScan {
+  id               String   @id @default(cuid())
+  companyId        String
+  company          Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  url              String
+  fetchOk          Boolean
+  error            String?
+  techStack        String?  // JSON array of {name, category, evidence}
+  topics           String?  // JSON array of keyword/topic strings
+  summary          String?  // one-line AI-generated business focus summary
+  contentHash      String?  // sha256 of normalized page text, for change detection
+  changedSincePrev Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  @@index([companyId])
 }
