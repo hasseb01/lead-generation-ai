@@ -1,5 +1,7 @@
 import { cacheGet, cacheSet } from "./cache";
 import { getMockPlaces, type RawPlace } from "./mockPlaces";
+import { fetchFromOverpass } from "./overpass";
+import { findRealCompanies } from "./realCompanies";
 
 const PLACES_CACHE_TTL_SECONDS = 60 * 60 * 24; // 24h, per the plan's caching strategy
 
@@ -70,22 +72,42 @@ async function fetchFromGooglePlaces(industry: string, location: string): Promis
   return detailed;
 }
 
-export async function searchCompanies(industry: string, location: string): Promise<{ places: RawPlace[]; source: "google_places" | "mock" }> {
+type SearchResult = { places: RawPlace[]; source: "google_places" | "osm" | "curated" | "mock" };
+
+/** Fallback chain when no Google Places key is set (or the live call fails):
+ *  1. OpenStreetMap (live, free, but public mirrors can be slow/unreliable)
+ *  2. Bundled real-company dataset (offline, instant, always available for covered cities)
+ *  3. Synthetic mock data (guarantees a result even for locations outside the curated set) */
+async function fetchFallback(industry: string, location: string): Promise<SearchResult> {
+  try {
+    const osmPlaces = await fetchFromOverpass(industry, location);
+    if (osmPlaces.length > 0) return { places: osmPlaces, source: "osm" };
+  } catch {
+    // OSM lookup failed (bad location, rate limit, network) — fall through.
+  }
+
+  const curatedPlaces = findRealCompanies(location);
+  if (curatedPlaces.length > 0) return { places: curatedPlaces, source: "curated" };
+
+  return { places: getMockPlaces(industry, location), source: "mock" };
+}
+
+export async function searchCompanies(industry: string, location: string): Promise<SearchResult> {
   const cacheKey = `places:${industry.trim().toLowerCase()}:${location.trim().toLowerCase()}`;
-  const cached = await cacheGet<{ places: RawPlace[]; source: "google_places" | "mock" }>(cacheKey);
+  const cached = await cacheGet<SearchResult>(cacheKey);
   if (cached) return cached;
 
-  let result: { places: RawPlace[]; source: "google_places" | "mock" };
+  let result: SearchResult;
   if (process.env.GOOGLE_PLACES_API_KEY) {
     try {
       result = { places: await fetchFromGooglePlaces(industry, location), source: "google_places" };
     } catch {
-      // Fall back to mock data if the live API errors out (bad key, quota, network) so the
-      // demo never hard-fails.
-      result = { places: getMockPlaces(industry, location), source: "mock" };
+      // Fall back to OSM / curated / mock if the live API errors out (bad key, quota, network)
+      // so the demo never hard-fails.
+      result = await fetchFallback(industry, location);
     }
   } else {
-    result = { places: getMockPlaces(industry, location), source: "mock" };
+    result = await fetchFallback(industry, location);
   }
 
   await cacheSet(cacheKey, result, PLACES_CACHE_TTL_SECONDS);

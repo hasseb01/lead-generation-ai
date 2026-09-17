@@ -71,7 +71,7 @@ type Lookalike = {
 
 type SearchResponse = {
   searchId: string;
-  source: "google_places" | "mock";
+  source: "google_places" | "osm" | "curated" | "mock";
   companies: Company[];
 };
 
@@ -310,8 +310,12 @@ export default function Home() {
                     Data source:{" "}
                     {result.source === "google_places" ? (
                       <span className="text-teal-400">Google Places API (live)</span>
+                    ) : result.source === "osm" ? (
+                      <span className="text-teal-400">OpenStreetMap (live, free)</span>
+                    ) : result.source === "curated" ? (
+                      <span className="text-teal-400">Curated real company dataset (offline)</span>
                     ) : (
-                      <span className="text-amber-400">Mock demo data — add GOOGLE_PLACES_API_KEY for live results</span>
+                      <span className="text-amber-400">Mock demo data — this city isn&apos;t in the curated dataset yet</span>
                     )}
                   </span>
                 </div>
